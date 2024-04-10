@@ -13,7 +13,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class dbghelp:
-    g_shareDll = True;
+    g_shareDll = True
     g_uniqueInitializationHandle = 1
     g_lock = threading.RLock()
 
@@ -48,7 +48,9 @@ class dbghelp:
                         ('object', ctypes.c_void_p)]
 
                 data = ctypes.cast(callbackData, ctypes.POINTER(CBA_EVENT_DATA))
-                message = data[0].desc.replace("\b", "").strip()
+
+                desc_str = data[0].desc.decode("utf-8")
+                message = desc_str.replace("\b", "").strip()
                 logger.info("dllEvent {}>({}) {}".format(self._uniqueProcessHandle, data[0].code, message))
                 return 1
             elif actionCode == 0x07:
@@ -81,8 +83,13 @@ class dbghelp:
         symoptions |= SYMOPT_DEBUG
         self.SymSetOptions(symoptions)
 
+        bytes_sympath = self._sympath.encode()
+        #logger.info("SymPath: {}".format(bytes_sympath))
+
         # Initialize the symbol system
-        success = self.SymInitialize(self._uniqueProcessHandle, ctypes.c_char_p(self._sympath), ctypes.c_bool(False))
+        success = self.SymInitialize(self._uniqueProcessHandle, 
+                                     ctypes.c_char_p(bytes_sympath), 
+                                     ctypes.c_bool(False))
         if (success == False):
             raise ctypes.WinError()
 
@@ -179,7 +186,17 @@ class dbghelp:
 
         fileLocation = ctypes.create_string_buffer(b'\000' * 1024)
         flags = self.SSRVOPT_DWORD
-        result = self.SymFindFileInPath(self._uniqueProcessHandle, self._sympath, name, id1, id2, 0, flags, fileLocation, None, None)
+
+        bytes_sympath = self._sympath.encode()
+        #logger.debug(bytes_sympath)
+        bytes_name = name.encode()
+        #logger.debug(bytes_name)
+
+        result = self.SymFindFileInPath(self._uniqueProcessHandle, 
+                                        ctypes.c_char_p(bytes_sympath), 
+                                        ctypes.c_char_p(bytes_name), 
+                                        id1, id2, 0, 
+                                        flags, fileLocation, None, None)
         if (not result):
             raise ctypes.WinError()
 
@@ -194,8 +211,17 @@ class dbghelp:
 
         fileLocation = ctypes.create_string_buffer(b'\000' * 1024)
         flags = self.SSRVOPT_GUIDPTR
-        result = self.SymFindFileInPath_pdb(self._uniqueProcessHandle, self._sympath, name, ctypes.byref(id1), id2, 0,
-                                        flags, fileLocation, None, None)
+
+        bytes_sympath = self._sympath.encode()
+        #logger.debug(bytes_sympath)
+        bytes_name = name.encode()
+        #logger.debug(bytes_name)
+
+        result = self.SymFindFileInPath_pdb(self._uniqueProcessHandle, 
+                                            ctypes.c_char_p(bytes_sympath), 
+                                            ctypes.c_char_p(bytes_name), 
+                                            ctypes.byref(id1), id2, 0,
+                                            flags, fileLocation, None, None)
 
         # if the search reports unsuccessful, it is possible it still
         # succeeded. This appears common with long distance servers with high latency.
