@@ -74,7 +74,7 @@ class MainHandler:
     def on_get_config(self, req, resp):
         configLocation = self._config.configFile()
         resp.stream = open(configLocation, 'rb')
-        resp.stream_len = os.path.getsize(configLocation)
+        resp.content_length = os.path.getsize(configLocation)
         resp.content_type = "json"
 
     def on_get_statistics(self, req, resp):
@@ -103,5 +103,5 @@ class MainHandler:
 
         logLocation = logfiles[logIndex - 1]
         resp.stream = open(logLocation, 'rb')
-        resp.stream_len = os.path.getsize(logLocation)
+        resp.content_length = os.path.getsize(logLocation)
         resp.content_type = "text"

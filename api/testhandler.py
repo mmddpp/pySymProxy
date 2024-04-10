@@ -12,7 +12,7 @@ class TestHandler:
         logging.info("get: {} client: {}".format(file_location, req.remote_addr))
         try:
             resp.stream = open(file_location, 'rb')
-            resp.stream_len = os.path.getsize(file_location)
+            resp.content_length = os.path.getsize(file_location)
             resp.content_type = "application/octet-stream"
 
         except Exception as e:

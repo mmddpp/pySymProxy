@@ -73,7 +73,7 @@ class SymbolHandler:
             if symbolLocation is not None:
                 logging.info("response: {}".format(symbolLocation))
                 resp.stream = open(symbolLocation, 'rb')
-                resp.stream_len = os.path.getsize(symbolLocation)
+                resp.content_length = os.path.getsize(symbolLocation)
                 resp.content_type = "application/octet-stream"
             else:
                 raise Exception("Unable to find file across the servers")
